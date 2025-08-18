@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <style>
+        body { background-color: #f4f7f6; }
+        #username-page { padding: 100px; text-align: center; }
+        #chat-page { position: relative; display: none; }
+        .chat-container { max-width: 700px; margin: 30px auto; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        #message-area { height: 400px; overflow-y: auto; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 15px 0; }
+        .event-message { width: 100%; text-align: center; color: #777; font-style: italic; }
+        .chat-message {
+            padding-left: 8px;
+            margin-bottom: 10px;
+        }
+        .chat-message.mine {
+            text-align: right;
+            padding-left: 0;
+            padding-right: 8px;
+        }
+        .chat-message strong {
+            color: #007bff;
+            margin-right: 5px;
+        }
+        .chat-message.mine strong {
+            display: none; /* 내 이름은 보이지 않게 */
+        }
+        .chat-message span {
+            background-color: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+        .chat-message.mine span {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div id="username-page">
+    <div class="username-page-container">
+        <h1 class="title mb-4">사용자 이름을 입력하세요</h1>
+        <form id="usernameForm" name="usernameForm">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block">채팅 시작</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="chat-page">
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2 class="text-center">Spring WebSocket Chat</h2>
+        </div>
+        <div id="message-area">
+            <ul id="messages" class="list-unstyled">
+                <!-- Messages will be appended here -->
+            </ul>
+        </div>
+        <form id="messageForm" name="messageForm" class="mt-3">
+            <div class="form-group d-flex">
+                <input type="text" id="messageInput" placeholder="메시지 입력" autocomplete="off" class="form-control"/>
+                <button type="submit" class="btn btn-primary ml-2">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const usernamePage = document.querySelector('#username-page');
+    const chatPage = document.querySelector('#chat-page');
+    const usernameForm = document.querySelector('#usernameForm');
+    const messageForm = document.querySelector('#messageForm');
+    const messageInput = document.querySelector('#messageInput');
+    const messagesList = document.querySelector('#messages');
+
+    let stompClient = null;
+    let username = null;
+
+    usernameForm.addEventListener('submit', connect, true);
+    messageForm.addEventListener('submit', sendMessage, true);
+
+    function connect(event) {
+        username = document.querySelector('#name').value.trim();
+        if (username) {
+            usernamePage.classList.add('d-none');
+            chatPage.style.display = 'block';
+
+            const socket = new SockJS('/ws-chat');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, onConnected, onError);
+        }
+        event.preventDefault();
+    }
+
+    function onConnected() {
+        stompClient.subscribe('/topic/public', onMessageReceived);
+        stompClient.send("/app/chat.addUser", {}, JSON.stringify({sender: username, type: 'JOIN'}));
+    }
+
+    function onError(error) {
+        alert('WebSocket 서버에 연결할 수 없습니다. 페이지를 새로고침하고 다시 시도하세요.');
+    }
+
+    function sendMessage() {
+        const messageContent = messageInput.value.trim();
+        if (messageContent && stompClient) {
+            const chatMessage = { sender: username, content: messageInput.value, type: 'CHAT' };
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+            messageInput.value = '';
+        }
+        event.preventDefault();
+    }
+
+    function onMessageReceived(payload) {
+        const message = JSON.parse(payload.body);
+        const messageElement = document.createElement('li');
+
+        if (message.type === 'JOIN') {
+            messageElement.classList.add('event-message');
+            messageElement.textContent = message.sender + ' 님이 입장하셨습니다.';
+        } else if (message.type === 'LEAVE') {
+            messageElement.classList.add('event-message');
+            messageElement.textContent = message.sender + ' 님이 퇴장하셨습니다.';
+        } else {
+            messageElement.classList.add('chat-message');
+
+            if (message.sender === username) {
+                messageElement.classList.add('mine');
+            }
+
+            messageElement.innerHTML = `<strong>${message.sender}</strong>: <span>${message.content}</span>`;
+        }
+
+        messagesList.appendChild(messageElement);
+        messagesList.scrollTop = messagesList.scrollHeight;
+    }
+</script>
+</body>
+</html>
