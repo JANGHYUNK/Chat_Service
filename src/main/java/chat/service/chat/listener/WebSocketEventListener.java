@@ -19,13 +19,15 @@ public class WebSocketEventListener {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        // 세션에서 사용자 이름과 방 ID를 가져옵니다.
         String username = (String) headerAccessor.getSessionAttributes().get("username");
-        if (username != null) {
-            log.info("사용자 연결 해제: {}", username);
+        String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
+        if (username != null && roomId != null) {
+            log.info("사용자 연결 해제: {}, 채팅방 ID: {}", username, roomId);
             var chatMessage = new ChatMessage();
             chatMessage.setType(ChatMessage.MessageType.LEAVE);
             chatMessage.setSender(username);
-            messageTemplate.convertAndSend("/topic/public", chatMessage);
+            messageTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), chatMessage);
         }
     }
 }
