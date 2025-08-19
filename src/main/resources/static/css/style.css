@@ -1,0 +1,32 @@
+body { background-color: #f4f7f6; }
+#username-page { padding: 100px; text-align: center; }
+#chat-page { position: relative; display: none; }
+.chat-container { max-width: 700px; margin: 30px auto; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+#message-area { height: 400px; overflow-y: auto; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 15px 0; }
+.event-message { width: 100%; text-align: center; color: #777; font-style: italic; }
+.chat-message {
+    padding-left: 8px;
+    margin-bottom: 10px;
+}
+.chat-message.mine {
+    text-align: right;
+    padding-left: 0;
+    padding-right: 8px;
+}
+.chat-message strong {
+    color: #007bff;
+    margin-right: 5px;
+}
+.chat-message.mine strong {
+    display: none; /* 내 이름은 보이지 않게 */
+}
+.chat-message span {
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 15px;
+    display: inline-block;
+}
+.chat-message.mine span {
+    background-color: #007bff;
+    color: #fff;
+}
