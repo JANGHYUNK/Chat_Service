@@ -41,6 +41,19 @@ function onConnected() {
         {},
         JSON.stringify({sender: username, type: 'JOIN'})
     );
+
+    // 이전 대화 기록을 불러옵니다.
+    fetch(`/api/chatrooms/${roomId}/messages`)
+        .then(response => response.json())
+        .then(messages => {
+            messages.forEach(message => {
+                // JOIN/LEAVE 메시지는 기록에서 보여주지 않거나, 다르게 처리할 수 있습니다.
+                if (message.type === 'CHAT') {
+                    displayMessage(message);
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching previous messages:', error));
 }
 
 function onError(error) {
@@ -63,6 +76,10 @@ function sendMessage(event) {
 
 function onMessageReceived(payload) {
     const message = JSON.parse(payload.body);
+    displayMessage(message);
+}
+
+function displayMessage(message) {
     const messageElement = document.createElement('li');
 
     if (message.type === 'JOIN' || message.type === 'LEAVE') {

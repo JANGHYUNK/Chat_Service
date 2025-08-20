@@ -1,36 +1,37 @@
 package chat.service.chat.service;
 
 import chat.service.chat.model.ChatRoom;
+import chat.service.chat.model.ChatRoomEntity;
+import chat.service.chat.repository.ChatRoomRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChatRoomService {
 
-    // 여러 스레드가 동시에 접근해도 안전한 ConcurrentHashMap을 사용합니다.
-    private final Map<String, ChatRoom> chatRooms = new ConcurrentHashMap<>();
+    private final ChatRoomRepository chatRoomRepository;
 
     // 채팅방 생성
     public ChatRoom createChatRoom(String name) {
-        String roomId = UUID.randomUUID().toString();
-        ChatRoom chatRoom = new ChatRoom(roomId, name);
-        chatRooms.put(roomId, chatRoom);
-        return chatRoom;
+        ChatRoomEntity chatRoomEntity = new ChatRoomEntity(UUID.randomUUID().toString(), name);
+        chatRoomRepository.save(chatRoomEntity);
+        return new ChatRoom(chatRoomEntity.getRoomId(), chatRoomEntity.getName());
     }
 
     // 모든 채팅방 조회
     public List<ChatRoom> findAllRooms() {
-        return new ArrayList<>(chatRooms.values());
-    }
-
-    // 특정 채팅방 조회
-    public ChatRoom findRoomById(String roomId) {
-        return chatRooms.get(roomId);
+        return chatRoomRepository.findAll().stream()
+                .map(entity -> new ChatRoom(entity.getRoomId(), entity.getName()))
+                .collect(Collectors.toList());
     }
 
     // 채팅방 삭제
     public void deleteRoom(String roomId) {
-        chatRooms.remove(roomId);
+        chatRoomRepository.deleteById(roomId);
     }
 }

@@ -1,6 +1,8 @@
 package chat.service.chat.listener;
 
 import chat.service.chat.model.ChatMessage;
+import chat.service.chat.model.ChatMessageEntity;
+import chat.service.chat.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -15,6 +17,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 public class WebSocketEventListener {
 
     private final SimpMessageSendingOperations messageTemplate;
+    private final ChatMessageRepository chatMessageRepository;
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
@@ -27,6 +30,9 @@ public class WebSocketEventListener {
             var chatMessage = new ChatMessage();
             chatMessage.setType(ChatMessage.MessageType.LEAVE);
             chatMessage.setSender(username);
+
+            ChatMessageEntity messageEntity = new ChatMessageEntity(roomId, chatMessage.getSender(), null, chatMessage.getType());
+            chatMessageRepository.save(messageEntity);
             messageTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), chatMessage);
         }
     }
