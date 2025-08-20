@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             roomList.innerHTML = ''; // Clear existing list
             rooms.forEach(room => {
                 const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
                 const a = document.createElement('a');
                 // Pass roomId and roomName to chat.html via URL parameters
                 a.href = `/chat.html?roomId=${room.roomId}&roomName=${encodeURIComponent(room.name)}`;
