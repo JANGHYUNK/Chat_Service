@@ -1,5 +1,3 @@
-alert('새로운 rooms.js 파일이 로드되었습니다!'); // 이 경고창이 뜨는지 확인해주세요.
-
 document.addEventListener('DOMContentLoaded', () => {
     const roomList = document.getElementById('roomList');
     const createRoomBtn = document.getElementById('createRoomBtn');
