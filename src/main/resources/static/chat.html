@@ -10,21 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
 </head>
 <body>
-<div id="username-page">
-    <div class="username-page-container">
-        <h1 class="title mb-4">사용자 이름을 입력하세요</h1>
-        <form id="usernameForm" name="usernameForm">
-            <div class="form-group">
-                <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control"/>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-secondary btn-block">채팅 시작</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="chat-page">
+<div id="chat-page" style="display: block;"> <!-- 페이지가 바로 보이도록 수정 -->
     <div class="chat-container">
         <div class="chat-header d-flex justify-content-between align-items-center pb-2 border-bottom">
             <h2 class="mb-0"></h2>

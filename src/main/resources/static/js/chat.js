@@ -1,8 +1,5 @@
 'use strict';
 
-const usernamePage = document.querySelector('#username-page');
-const chatPage = document.querySelector('#chat-page');
-const usernameForm = document.querySelector('#usernameForm');
 const messageForm = document.querySelector('#messageForm');
 const messageInput = document.querySelector('#messageInput');
 const messagesList = document.querySelector('#messages');
@@ -12,25 +9,23 @@ let stompClient = null;
 let username = null;
 let roomId = null;
 
-function connect(event) {
-    username = document.querySelector('#name').value.trim();
-
+// 페이지 로드 시 채팅 초기화
+document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     roomId = urlParams.get('roomId');
     const roomName = urlParams.get('roomName');
 
-    if (username && roomId) {
+    // Spring Security 컨텍스트에서 사용자 이름을 가져옵니다.
+    // 실제로는 /api/me 같은 엔드포인트를 만들어 가져오는 것이 좋습니다.
+    // 여기서는 컨트롤러에서 Principal을 사용하므로, 클라이언트에서는 보내기만 하면 됩니다.
+    if (roomId) {
         chatHeader.textContent = decodeURIComponent(roomName); // 채팅방 이름 표시
-
-        usernamePage.classList.add('d-none');
-        chatPage.style.display = 'block';
-
         const socket = new SockJS('/ws-chat');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, onConnected, onError);
     }
-    event.preventDefault();
-}
+});
+
 
 function onConnected() {
     // 각 채팅방의 고유한 토픽을 구독합니다.
@@ -39,7 +34,8 @@ function onConnected() {
     // 서버에 사용자 입장 정보를 전송합니다.
     stompClient.send(`/app/chat/${roomId}/addUser`,
         {},
-        JSON.stringify({sender: username, type: 'JOIN'})
+        // 서버에서 Principal을 통해 사용자 이름을 얻으므로, sender는 비워도 됩니다.
+        JSON.stringify({type: 'JOIN'})
     );
 
     // 이전 대화 기록을 불러옵니다.
@@ -62,7 +58,6 @@ function sendMessage(event) {
     const messageContent = messageInput.value.trim();
     if (messageContent && stompClient) {
         const chatMessage = {
-            sender: username,
             content: messageInput.value,
             type: 'CHAT'
         };
@@ -74,6 +69,10 @@ function sendMessage(event) {
 
 function onMessageReceived(payload) {
     const message = JSON.parse(payload.body);
+    // 현재 사용자 이름을 알아야 'mine' 클래스를 적용할 수 있습니다.
+    // 이 정보는 onConnected 시점에 서버에서 받아와 전역 변수에 저장하는 것이 좋습니다.
+    // 지금은 임시로 message.sender를 사용합니다.
+    if (!username) username = message.sender;
     displayMessage(message);
 }
 
@@ -106,7 +105,6 @@ function displayMessage(message) {
     messageArea.scrollTop = messageArea.scrollHeight;
 }
 
-usernameForm.addEventListener('submit', connect, true);
 messageForm.addEventListener('submit', sendMessage, true);
 
 const leaveBtn = document.getElementById('leaveBtn');
