@@ -44,13 +44,7 @@ public class ChatRoomController {
     @GetMapping("/api/chatrooms/{roomId}/messages")
     public List<ChatMessage> getRoomMessages(@PathVariable String roomId) {
         return chatMessageRepository.findByRoomIdOrderBySentAtAsc(roomId).stream()
-                .map(entity -> {
-                    ChatMessage message = new ChatMessage();
-                    message.setType(entity.getMessageType());
-                    message.setSender(entity.getSender());
-                    message.setContent(entity.getContent());
-                    return message;
-                })
+                .map(ChatMessage::new) // 엔티티를 DTO로 변환하는 로직을 생성자로 위임
                 .collect(Collectors.toList());
     }
 

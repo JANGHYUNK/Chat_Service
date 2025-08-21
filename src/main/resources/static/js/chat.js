@@ -47,10 +47,8 @@ function onConnected() {
         .then(response => response.json())
         .then(messages => {
             messages.forEach(message => {
-                // JOIN/LEAVE 메시지는 기록에서 보여주지 않거나, 다르게 처리할 수 있습니다.
-                if (message.type === 'CHAT') {
-                    displayMessage(message);
-                }
+                // 모든 유형의 과거 메시지(CHAT, JOIN, LEAVE)를 화면에 표시합니다.
+                displayMessage(message);
             });
         })
         .catch(error => console.error('Error fetching previous messages:', error));
