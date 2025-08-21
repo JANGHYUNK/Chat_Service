@@ -27,13 +27,11 @@ public class WebSocketEventListener {
         String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
         if (username != null && roomId != null) {
             log.info("사용자 연결 해제: {}, 채팅방 ID: {}", username, roomId);
-            var chatMessage = new ChatMessage();
-            chatMessage.setType(ChatMessage.MessageType.LEAVE);
-            chatMessage.setSender(username);
 
-            ChatMessageEntity messageEntity = new ChatMessageEntity(roomId, chatMessage.getSender(), null, chatMessage.getType());
-            chatMessageRepository.save(messageEntity);
-            messageTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), chatMessage);
+            // LEAVE 메시지를 DB에 저장하고, 저장된 정보를 기반으로 DTO를 생성하여 전송합니다.
+            ChatMessageEntity messageEntity = new ChatMessageEntity(roomId, username, null, ChatMessage.MessageType.LEAVE);
+            ChatMessageEntity savedEntity = chatMessageRepository.save(messageEntity);
+            messageTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), new ChatMessage(savedEntity));
         }
     }
 }

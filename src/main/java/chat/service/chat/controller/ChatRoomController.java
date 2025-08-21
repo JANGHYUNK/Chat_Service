@@ -51,8 +51,8 @@ public class ChatRoomController {
     // --- WebSocket Message Mappings ---
     @MessageMapping("/chat/{roomId}/sendMessage")
     public void sendMessage(@DestinationVariable String roomId, @Payload ChatMessage chatMessage) {
-        saveMessage(roomId, chatMessage);
-        messagingTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), chatMessage);
+        ChatMessageEntity savedEntity = saveMessage(roomId, chatMessage);
+        messagingTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), new ChatMessage(savedEntity));
     }
 
     @MessageMapping("/chat/{roomId}/addUser")
@@ -61,12 +61,12 @@ public class ChatRoomController {
         // WebSocket 세션에 사용자 이름과 방 ID를 저장합니다.
         headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
         headerAccessor.getSessionAttributes().put("roomId", roomId);
-        saveMessage(roomId, chatMessage);
-        messagingTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), chatMessage);
+        ChatMessageEntity savedEntity = saveMessage(roomId, chatMessage);
+        messagingTemplate.convertAndSend(String.format("/topic/chat/room/%s", roomId), new ChatMessage(savedEntity));
     }
 
-    private void saveMessage(String roomId, ChatMessage chatMessage) {
+    private ChatMessageEntity saveMessage(String roomId, ChatMessage chatMessage) {
         ChatMessageEntity messageEntity = new ChatMessageEntity(roomId, chatMessage.getSender(), chatMessage.getContent(), chatMessage.getType());
-        chatMessageRepository.save(messageEntity);
+        return chatMessageRepository.save(messageEntity);
     }
 }

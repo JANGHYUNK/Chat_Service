@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <title>채팅방 목록</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="container mt-5">
-<div class="col-md-8 offset-md-2">
-  <h1 class="mb-4 text-center">채팅방 목록</h1>
+<body>
+<div class="room-list-container">
+  <h1 class="mb-4 text-center">실시간 채팅</h1>
   <div class="input-group mb-3">
     <input type="text" id="roomNameInput" class="form-control" placeholder="새 채팅방 이름">
     <div class="input-group-append">
-      <button id="createRoomBtn" class="btn btn-primary">방 생성</button>
+      <button id="createRoomBtn" class="btn btn-secondary">방 생성</button>
     </div>
   </div>
   <ul id="roomList" class="list-group">

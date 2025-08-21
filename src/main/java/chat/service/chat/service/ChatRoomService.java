@@ -2,9 +2,11 @@ package chat.service.chat.service;
 
 import chat.service.chat.model.ChatRoom;
 import chat.service.chat.model.ChatRoomEntity;
+import chat.service.chat.repository.ChatMessageRepository;
 import chat.service.chat.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     // 채팅방 생성
     public ChatRoom createChatRoom(String name) {
@@ -31,7 +34,11 @@ public class ChatRoomService {
     }
 
     // 채팅방 삭제
+    @Transactional
     public void deleteRoom(String roomId) {
+        // 1. 해당 채팅방의 모든 메시지를 먼저 삭제합니다.
+        chatMessageRepository.deleteByRoomId(roomId);
+        // 2. 채팅방을 삭제합니다.
         chatRoomRepository.deleteById(roomId);
     }
 }
